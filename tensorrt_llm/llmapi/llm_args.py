@@ -205,6 +205,7 @@ class BaseSparseAttentionConfig(StrictBaseModel):
             "rocket": RocketSparseAttentionConfig,
             "dsa": DeepSeekSparseAttentionConfig,
             "skip_softmax": SkipSoftmaxAttentionConfig,
+            "aether": AetherSparseAttentionConfig,
         }
 
         algorithm = data.get("algorithm", None)
@@ -336,6 +337,34 @@ class SkipSoftmaxAttentionConfig(BaseSparseAttentionConfig):
         if isinstance(self.threshold_scale_factor, dict):
             return self.threshold_scale_factor.get('decode', None)
         return self.threshold_scale_factor
+    
+    
+class AetherSparseAttentionConfig(BaseSparseAttentionConfig):
+    """
+    Configuration for AETHER sparse attention.
+    """
+    algorithm: ClassVar[str] = "aether"
+    block_size: Optional[int] = Field(
+        default=64, description="Size of each KV block.")
+    threshold: Optional[float] = Field(
+        default=0.15, description="Attention potential threshold.")
+    use_variance: bool = Field(
+        default=True, description="Enable variance-aware scoring.")
+    use_concentration: bool = Field(
+        default=True, description="Enable concentration-based tight bounds.")
+    is_causal: bool = Field(
+        default=False, description="Enable causal streaming with recency bias.")
+    local_window: int = Field(
+        default=16, description="Number of recent blocks to always keep (causal mode).")
+    recency_decay: float = Field(
+        default=0.95, description="Decay factor for recency bonus (causal mode).")
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(**data)
+
+    def supports_backend(self, backend: str) -> bool:
+        return backend == "pytorch"
 
 
 class MoeLoadBalancerConfig(StrictBaseModel):

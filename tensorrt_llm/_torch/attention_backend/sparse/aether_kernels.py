@@ -125,7 +125,10 @@ def aether_sparse_kernel(
     # Apply concentration factor if enabled (tighter bound)
     if USE_CONCENTRATION:
         concentration = tl.load(Conc_Ptr + bh_idx * stride_c_h + block_idx * stride_c_blk).to(tl.float32)
-        deviation = deviation * concentration
+        # STABILIZATION FIX: Apply "Safety Clamp" to prevent lobotomy of messy blocks.
+        # Maps concentration [0.1, 1.0] -> [0.37, 1.0] penalty range.
+        concentration_factor = 0.3 + (0.7 * concentration)
+        deviation = deviation * concentration_factor
     
     # Compute attention potential
     attention_potential = center_score + deviation
@@ -138,7 +141,9 @@ def aether_sparse_kernel(
         
         # Force local window blocks to be active
         is_local = block_idx >= (N_BLOCKS - LOCAL_WINDOW)
-        is_active = (attention_potential > THRESHOLD) | is_local
+        # CRITICAL: Preserve Attention Sinks (First Block) + Local Window
+        is_sink = (block_idx == 0)
+        is_active = (attention_potential > THRESHOLD) | is_local | is_sink
     else:
         is_active = attention_potential > THRESHOLD
     
@@ -185,13 +190,13 @@ def metadata_calculator_kernel(
         
         # Normalize key
         key_norm = tl.sqrt(tl.sum(key * key))
-        key_normalized = key / (key_norm + 1e-8)
+        key_normalized = key / (key_norm + 1e-6)
         mean_acc += key_normalized
     
     # Normalize mean
     mean = mean_acc / BLOCK_SIZE
     mean_norm = tl.sqrt(tl.sum(mean * mean))
-    mean = mean / (mean_norm + 1e-8)
+    mean = mean / (mean_norm + 1e-6)
     
     # Store mean
     mean_offset = bh_idx * stride_m_h + block_idx * stride_m_blk
@@ -208,7 +213,7 @@ def metadata_calculator_kernel(
         
         # Normalize key
         key_norm_val = tl.sqrt(tl.sum(key * key))
-        key_normalized = key / (key_norm_val + 1e-8)
+        key_normalized = key / (key_norm_val + 1e-6)
         
         # Distance from mean
         diff = key_normalized - mean
@@ -248,12 +253,12 @@ def run_aether_sparse(
     block_radii: torch.Tensor,
     block_variances: Optional[torch.Tensor] = None,
     block_concentrations: Optional[torch.Tensor] = None,
-    threshold: float = 0.15,
+    threshold: float = 0.1,
     scale: Optional[float] = None,
     use_variance: bool = False,
     use_concentration: bool = False,
     is_causal: bool = False,
-    local_window: int = 4,
+    local_window: int = 16,
     recency_decay: float = 0.95,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
@@ -328,7 +333,7 @@ def run_aether_sparse(
 
 def precompute_metadata(
     keys: torch.Tensor,
-    block_size: int = 64,
+    block_size: int = 128,
     compute_variance: bool = False,
     compute_concentration: bool = False,
 ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor], Optional[torch.Tensor]]:

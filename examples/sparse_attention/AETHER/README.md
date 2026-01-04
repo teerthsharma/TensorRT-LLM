@@ -38,10 +38,10 @@ Where:
 
 The concentration factor measures how tightly keys cluster around the block mean:
 
-```python
-alignment = (keys_normalized · mean).mean()  # per block
-concentration = clamp(alignment, 0.1, 1.0)
-```
+$$
+C_b = \text{clamp}\left( \frac{1}{|B|} \sum_{k \in B} \frac{\mathbf{k} \cdot \boldsymbol{\mu}_b}{\|\mathbf{k}\| \|\boldsymbol{\mu}_b\|}, 0.1, 1.0 \right)
+$$
+
 
 High concentration (≈1.0) means keys are tightly clustered, enabling tighter scoring bounds and fewer false positives.
 

@@ -1,0 +1,97 @@
+14:24:04 | INFO     | 
+--- Testing sparsity: 50% ---
+14:24:04 | INFO     | Using dummy Llama 3 simulation (no HF model)
+14:24:04 | INFO     | Running synthetic Llama 3-like attention comparison...
+14:24:04 | INFO     | Precomputing block metadata...
+14:24:04 | INFO     | Running dense attention baseline...
+14:24:04 | INFO     | Running AETHER sparse attention (target sparsity: 50%)...
+14:24:05 | INFO     | 
+Dense time: 0.141 ms
+14:24:05 | INFO     | Sparse time: 0.415 ms
+14:24:05 | INFO     | Actual sparsity: 50.0%
+14:24:05 | INFO     | Cosine similarity: 0.6987
+14:24:05 | INFO     | L2 distance: 0.9844
+14:24:05 | INFO     | 
+--- Testing sparsity: 60% ---
+14:24:05 | INFO     | Using dummy Llama 3 simulation (no HF model)
+14:24:05 | INFO     | Running synthetic Llama 3-like attention comparison...
+14:24:05 | INFO     | Precomputing block metadata...
+14:24:05 | INFO     | Running dense attention baseline...
+14:24:05 | INFO     | Running AETHER sparse attention (target sparsity: 60%)...
+14:24:05 | INFO     | 
+Dense time: 0.146 ms
+14:24:05 | INFO     | Sparse time: 0.368 ms
+14:24:05 | INFO     | Actual sparsity: 74.2%
+14:24:05 | INFO     | Cosine similarity: 0.5557
+14:24:05 | INFO     | L2 distance: 1.6133
+14:24:05 | INFO     | 
+--- Testing sparsity: 70% ---
+14:24:05 | INFO     | Using dummy Llama 3 simulation (no HF model)
+14:24:05 | INFO     | Running synthetic Llama 3-like attention comparison...
+14:24:05 | INFO     | Precomputing block metadata...
+14:24:05 | INFO     | Running dense attention baseline...
+14:24:05 | INFO     | Running AETHER sparse attention (target sparsity: 70%)...
+14:24:05 | INFO     | 
+Dense time: 0.136 ms
+14:24:05 | INFO     | Sparse time: 0.388 ms
+14:24:05 | INFO     | Actual sparsity: 75.0%
+14:24:05 | INFO     | Cosine similarity: 0.5020
+14:24:05 | INFO     | L2 distance: 1.5596
+14:24:05 | INFO     | 
+--- Testing sparsity: 80% ---
+14:24:05 | INFO     | Using dummy Llama 3 simulation (no HF model)
+14:24:05 | INFO     | Running synthetic Llama 3-like attention comparison...
+14:24:05 | INFO     | Precomputing block metadata...
+14:24:05 | INFO     | Running dense attention baseline...
+14:24:05 | INFO     | Running AETHER sparse attention (target sparsity: 80%)...
+14:24:05 | INFO     | 
+Dense time: 0.128 ms
+14:24:05 | INFO     | Sparse time: 0.415 ms
+14:24:05 | INFO     | Actual sparsity: 75.0%
+14:24:05 | INFO     | Cosine similarity: 0.5059
+14:24:05 | INFO     | L2 distance: 1.6826
+14:24:05 | INFO     | 
+--- Testing sparsity: 90% ---
+14:24:05 | INFO     | Using dummy Llama 3 simulation (no HF model)
+14:24:05 | INFO     | Running synthetic Llama 3-like attention comparison...
+14:24:05 | INFO     | Precomputing block metadata...
+14:24:05 | INFO     | Running dense attention baseline...
+14:24:05 | INFO     | Running AETHER sparse attention (target sparsity: 90%)...
+14:24:05 | INFO     | 
+Dense time: 0.134 ms
+14:24:05 | INFO     | Sparse time: 0.366 ms
+14:24:05 | INFO     | Actual sparsity: 75.0%
+14:24:05 | INFO     | Cosine similarity: 0.5288
+14:24:05 | INFO     | L2 distance: 1.7168
+════════════════════════════════════════════════════════════
+  AETHER Sparse Attention - Llama 3 8B Accuracy Test
+════════════════════════════════════════════════════════════
+
+Configuration:
+  Model: meta-llama/Meta-Llama-3-8B
+  Sequence length: 512
+  Block size: 128
+  GPU: NVIDIA GeForce RTX 4060 Laptop GPU
+
+
+====================================================================================================
+AETHER vs DENSE ATTENTION - LLAMA 3 8B ACCURACY COMPARISON
+====================================================================================================
+  Sparsity    Dense PPL   Sparse PPL       ΔPPL    ΔPPL%     CosSim    Speedup
+----------------------------------------------------------------------------------------------------
+       50%         5.50         8.81     +3.314   +60.25%     0.6987       0.34x
+       74%         5.50        10.39     +4.888   +88.87%     0.5557       0.40x
+       75%         5.50        10.98     +5.479   +99.61%     0.5020       0.35x
+       75%         5.50        10.94     +5.436   +98.83%     0.5059       0.31x
+       75%         5.50        10.68     +5.183   +94.24%     0.5288       0.37x
+====================================================================================================
+
+INTERPRETATION:
+  - ΔPPL < +0.1: Negligible accuracy impact
+  - ΔPPL 0.1-0.5: Minor impact, acceptable for most production use cases
+  - ΔPPL 0.5-1.0: Moderate impact, task-dependent
+  - ΔPPL > 1.0: Significant impact, requires careful evaluation
+
+  - CosSim > 0.99: Excellent quality preservation
+  - CosSim 0.95-0.99: Good quality, minor deviation
+  - CosSim 0.90-0.95: Acceptable for inference speedup tradeoff
